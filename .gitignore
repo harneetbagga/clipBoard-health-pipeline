@@ -1,0 +1,46 @@
+# Data files - too large for Git, stored in S3/Google Drive
+data/*.csv
+data/*.pdf
+
+# Secrets & credentials
+.env
+*.env
+dbt_project/profiles.yml
+terraform/terraform.tfvars
+terraform/*.tfvars
+!terraform/terraform.tfvars.example
+*.pem
+*.key
+*.json
+!package.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# dbt
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/tfplan
+
+# Airflow
+airflow/logs/
+airflow.cfg
+airflow.db
+
+# OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

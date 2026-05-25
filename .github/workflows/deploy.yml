@@ -1,0 +1,211 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # allows manual trigger from GitHub UI
+
+jobs:
+  # ── 1. Terraform Apply ──────────────────────────────────────────────────────
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve \
+            -var="snowflake_account=${{ secrets.SNOWFLAKE_ACCOUNT }}" \
+            -var="snowflake_user=${{ secrets.SNOWFLAKE_USER }}" \
+            -var="snowflake_password=${{ secrets.SNOWFLAKE_PASSWORD }}" \
+            -var="s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}" \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -var="glue_iam_role_arn=${{ secrets.GLUE_IAM_ROLE_ARN }}"
+
+  # ── 2. dbt Snapshot (SCD) ───────────────────────────────────────────────────
+  dbt-snapshot:
+    name: dbt Snapshot
+    runs-on: ubuntu-latest
+    needs: [terraform-apply]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-snowflake
+
+      - name: Install dbt packages
+        working-directory: dbt_project
+        run: dbt deps
+
+      - name: Run dbt snapshot
+        working-directory: dbt_project
+        run: dbt snapshot --profiles-dir . --target prod
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+
+  # ── 3. dbt Full Build + Test ────────────────────────────────────────────────
+  dbt-deploy:
+    name: dbt Full Build + Test
+    runs-on: ubuntu-latest
+    needs: [dbt-snapshot]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-snowflake
+
+      - name: Install dbt packages
+        working-directory: dbt_project
+        run: dbt deps
+
+      - name: dbt build
+        working-directory: dbt_project
+        run: dbt build --profiles-dir . --target prod
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+
+      - name: dbt test
+        working-directory: dbt_project
+        run: dbt test --profiles-dir . --target prod
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+
+      - name: Upload dbt manifest to S3 (for PR state comparison)
+        run: |
+          aws s3 cp dbt_project/target/manifest.json \
+            s3://${{ secrets.S3_BUCKET_NAME }}/dbt-artifacts/manifest.json
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Generate dbt docs
+        working-directory: dbt_project
+        run: dbt docs generate --profiles-dir . --target prod
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+
+      - name: Upload dbt docs to S3
+        run: |
+          aws s3 sync dbt_project/target/ \
+            s3://${{ secrets.S3_BUCKET_NAME }}/dbt-docs/ \
+            --exclude "*" \
+            --include "manifest.json" \
+            --include "catalog.json" \
+            --include "index.html"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+  # ── 4. Airflow DAG Deploy ───────────────────────────────────────────────────
+  airflow-deploy:
+    name: Airflow DAG Deploy
+    runs-on: ubuntu-latest
+    needs: [terraform-apply]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Airflow for validation
+        run: |
+          pip install \
+            apache-airflow==2.8.0 \
+            apache-airflow-providers-snowflake \
+            apache-airflow-providers-amazon \
+            --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.8.0/constraints-3.11.txt"
+
+      - name: Validate DAG before deploy
+        run: python scripts/validate_dag.py
+
+      - name: Sync DAGs to S3 (MWAA) or EC2
+        run: |
+          aws s3 sync airflow/dags/ \
+            s3://${{ secrets.S3_BUCKET_NAME }}/airflow/dags/ \
+            --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+  # ── 5. Notify on success ────────────────────────────────────────────────────
+  notify:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [terraform-apply, dbt-deploy, airflow-deploy]
+    if: always()
+
+    steps:
+      - name: Deployment status
+        run: |
+          echo "Terraform: ${{ needs.terraform-apply.result }}"
+          echo "dbt deploy: ${{ needs.dbt-deploy.result }}"
+          echo "Airflow deploy: ${{ needs.airflow-deploy.result }}"
+          if [[ "${{ needs.dbt-deploy.result }}" == "failure" || \
+                "${{ needs.airflow-deploy.result }}" == "failure" ]]; then
+            echo "Deployment failed — check logs above"
+            exit 1
+          fi
+          echo "All deployments successful"

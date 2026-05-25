@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ══ TITLE ══ -->
+    <mxCell id="title" value="Option 3 — Snowflake Pipeline: Glue Python Shell + S3 Bronze + COPY INTO + dbt + Snowflake + Airflow + Streamlit" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="140" y="18" width="1360" height="38" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER BACKGROUND BANDS ══ -->
+    <mxCell id="band1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=none;opacity=80;" vertex="1" parent="1">
+      <mxGeometry x="110" y="66" width="1440" height="110" as="geometry" />
+    </mxCell>
+    <mxCell id="band2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF6EA;strokeColor=none;opacity=80;" vertex="1" parent="1">
+      <mxGeometry x="110" y="186" width="1440" height="120" as="geometry" />
+    </mxCell>
+    <mxCell id="band3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EAFAF0;strokeColor=none;opacity=80;" vertex="1" parent="1">
+      <mxGeometry x="110" y="316" width="1440" height="130" as="geometry" />
+    </mxCell>
+    <mxCell id="band4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF0EA;strokeColor=none;opacity=80;" vertex="1" parent="1">
+      <mxGeometry x="110" y="456" width="1440" height="200" as="geometry" />
+    </mxCell>
+    <mxCell id="band5" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5EAFF;strokeColor=none;opacity=80;" vertex="1" parent="1">
+      <mxGeometry x="110" y="666" width="1440" height="120" as="geometry" />
+    </mxCell>
+    <mxCell id="band6" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EAF0FF;strokeColor=none;opacity=80;" vertex="1" parent="1">
+      <mxGeometry x="110" y="796" width="1440" height="110" as="geometry" />
+    </mxCell>
+    <mxCell id="band7" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F0FFEA;strokeColor=none;opacity=80;" vertex="1" parent="1">
+      <mxGeometry x="110" y="916" width="1440" height="100" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER LABELS ══ -->
+    <mxCell id="lbl1" value="SOURCE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#000000;rotation=-90;" vertex="1" parent="1">
+      <mxGeometry x="55" y="96" width="80" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="lbl2" value="INGESTION" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#000000;rotation=-90;" vertex="1" parent="1">
+      <mxGeometry x="55" y="216" width="80" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="lbl3" value="LANDING" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#000000;rotation=-90;" vertex="1" parent="1">
+      <mxGeometry x="55" y="356" width="80" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="lbl4" value="WAREHOUSE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#000000;rotation=-90;" vertex="1" parent="1">
+      <mxGeometry x="55" y="526" width="80" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="lbl5" value="ORCHESTRATION" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#000000;rotation=-90;" vertex="1" parent="1">
+      <mxGeometry x="55" y="696" width="80" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="lbl6" value="SERVING" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#000000;rotation=-90;" vertex="1" parent="1">
+      <mxGeometry x="55" y="826" width="80" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="lbl7" value="CONSUME" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#000000;rotation=-90;" vertex="1" parent="1">
+      <mxGeometry x="55" y="946" width="80" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER 1: SOURCE ══ -->
+    <mxCell id="gdrive" value="Google Drive&#xa;PBJ + 15 CMS CSVs&#xa;Quarterly / Monthly drops" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=#4285F4;fillColor=#FFFFFF;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.google_workspace.drive;" vertex="1" parent="1">
+      <mxGeometry x="690" y="78" width="160" height="90" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER 2: INGESTION ══ -->
+    <mxCell id="eventbridge" value="EventBridge Scheduler&#xa;Cron triggers" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#E7157B;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;" vertex="1" parent="1">
+      <mxGeometry x="160" y="206" width="160" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="glueshell" value="Glue Python Shell Job&#xa;Drive API · download if new&#xa;Query Snowflake audit table" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#8C4FFF;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.glue;" vertex="1" parent="1">
+      <mxGeometry x="590" y="200" width="160" height="100" as="geometry" />
+    </mxCell>
+    <mxCell id="snowflake_audit" value="Snowflake&#xa;audit.load_history&#xa;Watermark + file state" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#29B5E8;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.azure.snowflake;" vertex="1" parent="1">
+      <mxGeometry x="1100" y="206" width="160" height="90" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER 3: LANDING — S3 Bronze only ══ -->
+    <mxCell id="s3_note" value="AWS S3 — Bronze Landing Zone only (raw CSVs · immutable · partitioned by source + date)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#3F8624;dashed=1;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#000000;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="140" y="325" width="1370" height="112" as="geometry" />
+    </mxCell>
+    <mxCell id="bronze" value="S3 Bronze&#xa;Raw CSVs as-is&#xa;External stage for Snowflake&#xa;s3://…/bronze/" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#3F8624;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+      <mxGeometry x="660" y="348" width="220" height="76" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER 4: SNOWFLAKE WAREHOUSE ══ -->
+    <mxCell id="sf_container" value="Snowflake Data Warehouse — Raw / Silver / Gold schemas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#29B5E8;dashed=1;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#000000;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="140" y="466" width="1370" height="182" as="geometry" />
+    </mxCell>
+
+    <!-- COPY INTO -->
+    <mxCell id="copyinto" value="COPY INTO&#xa;S3 external stage → Snowflake&#xa;Airflow-triggered · deduplication" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F7FF;strokeColor=#29B5E8;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="170" y="500" width="220" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- Snowflake Raw -->
+    <mxCell id="sf_raw" value="Raw Schema&#xa;Direct COPY INTO tables&#xa;One table per source file" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#29B5E8;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.azure.snowflake;" vertex="1" parent="1">
+      <mxGeometry x="490" y="495" width="160" height="100" as="geometry" />
+    </mxCell>
+
+    <!-- dbt -->
+    <mxCell id="dbt" value="dbt Core&#xa;SQL transforms · tests&#xa;auto-docs · lineage DAG" style="shape=mxgraph.logos.dbt;fontColor=#000000;strokeColor=none;fillColor=#FF694A;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;" vertex="1" parent="1">
+      <mxGeometry x="790" y="496" width="160" height="100" as="geometry" />
+    </mxCell>
+
+    <!-- Snowflake Silver/Gold -->
+    <mxCell id="sf_silvergold" value="Silver + Gold Schemas&#xa;Silver: cleaned + joined tables&#xa;Gold: M1–M5 metric tables" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#29B5E8;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.azure.snowflake;" vertex="1" parent="1">
+      <mxGeometry x="1090" y="495" width="180" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER 5: ORCHESTRATION — Airflow ══ -->
+    <mxCell id="airflow_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#017CEE;dashed=1;strokeWidth=2;" vertex="1" parent="1">
+      <mxGeometry x="140" y="676" width="1370" height="102" as="geometry" />
+    </mxCell>
+    <mxCell id="airflow_title" value="Apache Airflow DAG — healthcare_metrics_pipeline" style="text;html=1;strokeColor=none;fillColor=none;fontSize=12;fontStyle=1;fontColor=#000000;align=left;" vertex="1" parent="1">
+      <mxGeometry x="155" y="678" width="500" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- DAG Tasks -->
+    <mxCell id="t1" value="Task 1&#xa;check_drive_files&#xa;Get Drive metadata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F3FF;strokeColor=#017CEE;fontColor=#000000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="158" y="700" width="160" height="66" as="geometry" />
+    </mxCell>
+    <mxCell id="t2" value="Task 2&#xa;check_audit_table&#xa;Query Snowflake history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F3FF;strokeColor=#017CEE;fontColor=#000000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="348" y="700" width="160" height="66" as="geometry" />
+    </mxCell>
+    <mxCell id="t3" value="Task 3&#xa;download_to_s3&#xa;Glue Shell job" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F3FF;strokeColor=#017CEE;fontColor=#000000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="538" y="700" width="160" height="66" as="geometry" />
+    </mxCell>
+    <mxCell id="t4" value="Task 4&#xa;copy_into_snowflake&#xa;SnowflakeOperator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F3FF;strokeColor=#017CEE;fontColor=#000000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="728" y="700" width="160" height="66" as="geometry" />
+    </mxCell>
+    <mxCell id="t5" value="Task 5&#xa;dbt_run&#xa;BashOperator / dbt Cloud" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E0;strokeColor=#FF694A;fontColor=#000000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="918" y="700" width="160" height="66" as="geometry" />
+    </mxCell>
+    <mxCell id="t6" value="Task 6&#xa;update_audit_table&#xa;Log success + row count" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F3FF;strokeColor=#017CEE;fontColor=#000000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1108" y="700" width="160" height="66" as="geometry" />
+    </mxCell>
+
+    <!-- Task arrows -->
+    <mxCell id="ta1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;" edge="1" source="t1" target="t2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="ta2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;" edge="1" source="t2" target="t3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="ta3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;" edge="1" source="t3" target="t4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="ta4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;" edge="1" source="t4" target="t5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="ta5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;" edge="1" source="t5" target="t6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+    <!-- ══ LAYER 6: SERVING ══ -->
+    <mxCell id="sf_serve" value="Snowflake Gold Schema&#xa;Direct query from Streamlit&#xa;Analysts + dashboard" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#29B5E8;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.azure.snowflake;" vertex="1" parent="1">
+      <mxGeometry x="280" y="808" width="200" height="90" as="geometry" />
+    </mxCell>
+    <mxCell id="airflow_ui" value="Airflow UI&#xa;DAG run history · logs&#xa;Task-level monitoring" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F3FF;strokeColor=#017CEE;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="660" y="810" width="220" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="cloudwatch" value="CloudWatch&#xa;Glue Shell logs + alerts" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#E7157B;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="808" width="160" height="85" as="geometry" />
+    </mxCell>
+
+    <!-- ══ LAYER 7: CONSUMPTION ══ -->
+    <mxCell id="streamlit" value="Streamlit Dashboard&#xa;M1–M5 metrics&#xa;Queries Snowflake Gold directly" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE4E4;strokeColor=#FF4B4B;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="160" y="928" width="260" height="68" as="geometry" />
+    </mxCell>
+    <mxCell id="analysts" value="Analysts&#xa;SQL via Snowflake / DBeaver&#xa;Full Silver + Gold access" style="outlineConnect=0;fontColor=#000000;gradientColor=none;strokeColor=none;fillColor=#232F3E;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;shape=mxgraph.aws4.user;" vertex="1" parent="1">
+      <mxGeometry x="610" y="928" width="200" height="68" as="geometry" />
+    </mxCell>
+    <mxCell id="dbt_docs" value="dbt Docs Site&#xa;Auto-generated lineage&#xa;Column descriptions + tests" style="shape=mxgraph.logos.dbt;fontColor=#000000;strokeColor=none;fillColor=#FF694A;labelBackgroundColor=none;align=center;html=1;fontSize=11;fontStyle=1;aspect=fixed;" vertex="1" parent="1">
+      <mxGeometry x="1130" y="930" width="200" height="66" as="geometry" />
+    </mxCell>
+
+    <!-- ══ MAIN CONNECTORS ══ -->
+    <mxCell id="c1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#232F3E;strokeWidth=2;" edge="1" source="gdrive" target="glueshell" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#232F3E;strokeWidth=2;" edge="1" source="eventbridge" target="glueshell" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#29B5E8;strokeWidth=2;" edge="1" source="glueshell" target="snowflake_audit" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#3F8624;strokeWidth=2;" edge="1" source="glueshell" target="bronze" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#29B5E8;strokeWidth=2;" edge="1" source="bronze" target="copyinto" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c6" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#29B5E8;strokeWidth=2;" edge="1" source="copyinto" target="sf_raw" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c7" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#FF694A;strokeWidth=2;" edge="1" source="sf_raw" target="dbt" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c8" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#FF694A;strokeWidth=2;" edge="1" source="dbt" target="sf_silvergold" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c9" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#29B5E8;strokeWidth=2;" edge="1" source="sf_silvergold" target="sf_serve" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c10" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#29B5E8;strokeWidth=2;" edge="1" source="sf_serve" target="streamlit" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c11" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#29B5E8;strokeWidth=2;" edge="1" source="sf_serve" target="analysts" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c12" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#FF694A;strokeWidth=2;" edge="1" source="dbt" target="dbt_docs" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c13" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;dashed=1;" edge="1" source="airflow_container" target="glueshell" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c14" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;dashed=1;" edge="1" source="airflow_container" target="copyinto" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c15" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#017CEE;strokeWidth=2;dashed=1;" edge="1" source="airflow_container" target="dbt" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c16" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#232F3E;strokeWidth=2;" edge="1" source="cloudwatch" target="airflow_container" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <mxCell id="c17" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#29B5E8;strokeWidth=2;" edge="1" source="snowflake_audit" target="sf_silvergold" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+    <!-- ══ LEGEND ══ -->
+    <mxCell id="legbox" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#232F3E;strokeWidth=1;" vertex="1" parent="1">
+      <mxGeometry x="140" y="1012" width="1000" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="leg_t" value="Legend:" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="155" y="1027" width="58" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="leg1" value="AWS Managed Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF0FF;strokeColor=#6c8ebf;fontSize=10;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="222" y="1024" width="150" height="24" as="geometry" />
+    </mxCell>
+    <mxCell id="leg2" value="Snowflake" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F7FF;strokeColor=#29B5E8;fontSize=10;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="384" y="1024" width="100" height="24" as="geometry" />
+    </mxCell>
+    <mxCell id="leg3" value="Open-source (dbt / Airflow)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAFAF0;strokeColor=#82b366;fontSize=10;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="496" y="1024" width="190" height="24" as="geometry" />
+    </mxCell>
+    <mxCell id="leg4" value="--- Airflow DAG trigger" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#017CEE;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="698" y="1028" width="160" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="leg5" value="—— Data flow" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#232F3E;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="868" y="1028" width="130" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="leg_note" value="Note: Enable AWS + Azure shape libraries in draw.io to render icons: Extras → Edit Diagram or View → Shapes panel" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+      <mxGeometry x="140" y="1064" width="760" height="18" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

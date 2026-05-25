@@ -1,0 +1,218 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dbt_project/**'
+      - 'ingestion/**'
+      - 'airflow/**'
+      - 'terraform/**'
+      - '.github/workflows/**'
+
+jobs:
+  # ── 1. Terraform Plan ────────────────────────────────────────────────────────
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -var="snowflake_account=${{ secrets.SNOWFLAKE_ACCOUNT }}" \
+            -var="snowflake_user=${{ secrets.SNOWFLAKE_USER }}" \
+            -var="snowflake_password=${{ secrets.SNOWFLAKE_PASSWORD }}" \
+            -var="s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}" \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -no-color \
+            -out=tfplan 2>&1 | tee plan_output.txt
+
+      - name: Post plan to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform/plan_output.txt', 'utf8');
+            const truncated = plan.length > 60000
+              ? plan.substring(0, 60000) + '\n... (truncated)'
+              : plan;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Plan\n\`\`\`hcl\n${truncated}\n\`\`\``
+            });
+
+  # ── 2. SQL Linting ──────────────────────────────────────────────────────────
+  sql-lint:
+    name: SQLFluff Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install SQLFluff
+        run: pip install sqlfluff sqlfluff-templater-dbt dbt-snowflake
+
+      - name: Install dbt packages
+        working-directory: dbt_project
+        run: dbt deps
+
+      - name: Run SQLFluff
+        working-directory: dbt_project
+        run: |
+          sqlfluff lint models/ \
+            --dialect snowflake \
+            --templater dbt \
+            --format github-annotation \
+            --annotation-level warning
+        env:
+          DBT_PROFILES_DIR: .
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+  # ── 3. Python Linting ──────────────────────────────────────────────────────
+  python-lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8
+        run: |
+          flake8 ingestion/ airflow/ scripts/ \
+            --max-line-length=100 \
+            --exclude=__pycache__ \
+            --format=default
+
+  # ── 4. dbt Build (modified models only on PR) ───────────────────────────────
+  dbt-build:
+    name: dbt Build + Test
+    runs-on: ubuntu-latest
+    needs: [sql-lint]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed for state:modified comparison
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-snowflake
+
+      - name: Install dbt packages
+        working-directory: dbt_project
+        run: dbt deps
+
+      - name: Download production manifest (for state comparison)
+        working-directory: dbt_project
+        run: |
+          aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/dbt-artifacts/manifest.json \
+            ./manifest.json || echo "No production manifest found, running all models"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: dbt build (modified models only)
+        working-directory: dbt_project
+        run: |
+          if [ -f manifest.json ]; then
+            dbt build \
+              --profiles-dir . \
+              --target prod \
+              --select state:modified+ \
+              --state .
+          else
+            dbt build \
+              --profiles-dir . \
+              --target prod
+          fi
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+
+  # ── 5. Airflow DAG Validation ───────────────────────────────────────────────
+  airflow-validate:
+    name: Airflow DAG Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Airflow + providers
+        run: |
+          pip install \
+            apache-airflow==2.8.0 \
+            apache-airflow-providers-snowflake \
+            apache-airflow-providers-amazon \
+            --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.8.0/constraints-3.11.txt"
+
+      - name: Validate DAG imports
+        run: python scripts/validate_dag.py
+
+      - name: Check DAG integrity
+        run: |
+          export AIRFLOW_HOME=/tmp/airflow
+          export AIRFLOW__CORE__LOAD_EXAMPLES=False
+          airflow db init
+          airflow dags list 2>&1 | grep -i "error" && exit 1 || exit 0
+        env:
+          PYTHONPATH: ${{ github.workspace }}/airflow
