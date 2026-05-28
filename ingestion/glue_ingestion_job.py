@@ -65,6 +65,7 @@ except Exception:
         's3_bucket':                      os.environ['S3_BUCKET_NAME'],
         'google_drive_folder_id':         os.environ['GOOGLE_DRIVE_FOLDER_ID'],
         'google_credentials_secret_name': os.environ['GOOGLE_CREDENTIALS_SECRET_NAME'],
+        'force_reload':                   os.environ.get('FORCE_RELOAD', 'false'),
     }
 
 FILE_NAME       = args['file_name']
@@ -345,7 +346,8 @@ def validate_checksum(content: bytes, expected_md5: Optional[str]) -> bool:
 
 # ── COPY INTO ─────────────────────────────────────────────────────────────────
 
-def run_copy_into(conn, s3_path: str, raw_table: str) -> int:
+def run_copy_into(conn, s3_path: str, raw_table: str, force: bool = False) -> int:
+
     """
     Run COPY INTO to load file from S3 into Snowflake RAW table.
     Returns number of rows loaded.
@@ -368,6 +370,7 @@ def run_copy_into(conn, s3_path: str, raw_table: str) -> int:
             FILE_FORMAT = (FORMAT_NAME = 'HEALTHCARE_METRICS.RAW.CSV_FORMAT')
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = FALSE
+            {'FORCE = TRUE' if force else ''}
         """
 
         log("info", "copy_into_started",
@@ -505,8 +508,15 @@ def ingest_file(file_config: dict) -> dict:
 
         # ── Step 6: Write to S3 Bronze ──────────────────────────────────────
         date_prefix = datetime.now(timezone.utc).strftime('%Y/%m/%d')
-        s3_key      = f"{s3_prefix}/{date_prefix}/{filename}"
-        s3_path     = f"s3://{S3_BUCKET}/{s3_key}"
+
+        # Full S3 key for boto3 write (from bucket root)
+        s3_key = f"bronze/{s3_prefix}/{date_prefix}/{filename}"
+
+        # Stage-relative path for Snowflake COPY INTO
+        # Stage URL already includes /bronze/ so we omit it here
+        stage_relative_path = f"{s3_prefix}/{date_prefix}/{filename}"
+
+        s3_path = f"s3://{S3_BUCKET}/{s3_key}"
 
         write_to_s3(content, S3_BUCKET, s3_key)
         log("info", "s3_write_complete",
@@ -514,7 +524,7 @@ def ingest_file(file_config: dict) -> dict:
             size_bytes=len(content))
 
         # ── Step 7: COPY INTO Snowflake ─────────────────────────────────────
-        row_count = run_copy_into(sf_conn, s3_key, raw_table)
+        row_count = run_copy_into(sf_conn, stage_relative_path, raw_table)
         status    = 'success'
 
         log("info", "ingestion_complete",
